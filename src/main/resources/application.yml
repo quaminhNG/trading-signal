@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/trading_signal
+    username: trading
+    password: trading123
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  flyway:
+    enabled: true
+
+app:
+  jwt:
+    secret: trading-signal-jwt-secret-key-must-be-at-least-32-characters-long
+    access-token-expiration-ms: 900000       # 15 phút
+    refresh-token-expiration-ms: 604800000   # 7 ngày
+
+  collector:
+    binance:
+      enabled: true
+      base-url: https://api.binance.com
+    alpha-vantage:
+      enabled: false
+      base-url: https://www.alphavantage.co
+      api-key: ${ALPHA_VANTAGE_API_KEY:demo}
+    schedule:
+      crypto-cron: "0 5 * * * *"             # Mỗi giờ tại phút :05
+      stock-cron: "0 0 18 * * MON-FRI"       # Ngày thường lúc 18:00
