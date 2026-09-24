@@ -164,10 +164,10 @@ function App() {
               <p className="text-muted" style={{ fontSize: '0.85rem' }}>Bitcoin / Tether US (BTCUSDT) • Nến 1 Giờ (1H)</p>
             </div>
             <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-              <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', color: 'var(--accent-blue)', fontWeight: 600, whiteSpace: 'nowrap', border: '1px solid rgba(59,130,246,0.3)', boxShadow: '0 0 10px rgba(59,130,246,0.1)' }}>
+              <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px', background: 'rgba(100, 116, 139,0.15)', color: 'var(--accent-blue)', fontWeight: 600, whiteSpace: 'nowrap', border: '1px solid rgba(100, 116, 139,0.3)' }}>
                 Khung 1 Giờ
               </span>
-              <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px', background: 'rgba(16,185,129,0.15)', color: 'var(--accent-green)', fontWeight: 600, whiteSpace: 'nowrap', border: '1px solid rgba(16,185,129,0.3)', boxShadow: '0 0 10px rgba(16,185,129,0.1)' }}>
+              <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px', background: 'rgba(249, 115, 22,0.15)', color: 'var(--accent-green)', fontWeight: 600, whiteSpace: 'nowrap', border: '1px solid rgba(249, 115, 22,0.3)' }}>
                 Binance Spot
               </span>
             </div>
@@ -291,14 +291,14 @@ function App() {
       {/* Right Panel: Virtual Wallet & Performance Overview */}
       <div className="flex-col gap-24" style={{ minWidth: 0, width: '100%' }}>
         {/* Virtual Wallet Card */}
-        <div className="soft-card" style={{ background: 'linear-gradient(145deg, var(--bg-color), rgba(59, 130, 246, 0.05))', padding: '22px' }}>
+        <div className="soft-card" style={{ background: 'linear-gradient(145deg, var(--bg-color), rgba(100, 116, 139, 0.05))', padding: '22px' }}>
           {/* Card Top: Title & Initial Capital */}
           <div className="flex-between" style={{ marginBottom: '14px', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <WalletIcon size={20} color="var(--accent-blue)" />
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700, whiteSpace: 'nowrap' }}>Ví Giao Dịch Ảo</h3>
             </div>
-            <span style={{ fontSize: '0.75rem', background: 'rgba(59,130,246,0.15)', color: 'var(--accent-blue)', padding: '4px 12px', borderRadius: '12px', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0, border: '1px solid rgba(59,130,246,0.3)', boxShadow: '0 0 10px rgba(59,130,246,0.1)' }}>
+            <span style={{ fontSize: '0.75rem', background: 'rgba(100, 116, 139,0.15)', color: 'var(--accent-blue)', padding: '4px 12px', borderRadius: '12px', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0, border: '1px solid rgba(100, 116, 139,0.3)' }}>
               Vốn gốc $10,000
             </span>
           </div>
@@ -306,12 +306,12 @@ function App() {
           {/* MAIN HIGHLIGHT: Tổng Tài Sản Ròng & Trạng Thái Lời/Lỗ */}
           <div
             style={{
-              background: isProfit ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-              border: `1px solid ${isProfit ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
+              background: isProfit ? 'rgba(249, 115, 22, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+              border: `1px solid ${isProfit ? 'rgba(249, 115, 22, 0.3)' : 'rgba(244, 63, 94, 0.3)'}`,
               borderRadius: '16px',
               padding: '20px',
               marginBottom: '20px',
-              boxShadow: isProfit ? '0 0 20px rgba(16, 185, 129, 0.05)' : '0 0 20px rgba(244, 63, 94, 0.05)',
+              
               position: 'relative',
               overflow: 'hidden'
             }}
@@ -334,7 +334,7 @@ function App() {
                   letterSpacing: '0.5px',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
-                  boxShadow: isProfit ? '0 0 10px rgba(16, 185, 129, 0.4)' : '0 0 10px rgba(244, 63, 94, 0.4)',
+                  
                 }}
               >
                 {isProfit ? <TrendingUpIcon size={12} color="#ffffff" /> : <TrendingDownIcon size={12} color="#ffffff" />}
@@ -418,7 +418,7 @@ function App() {
                       borderRadius: '10px',
                       background: 'rgba(255, 255, 255, 0.65)',
                       marginBottom: '10px',
-                      border: `1px solid ${isPosProfit ? 'rgba(16, 185, 129, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,
+                      border: `1px solid ${isPosProfit ? 'rgba(249, 115, 22, 0.25)' : 'rgba(239, 68, 68, 0.25)'}`,
                     }}
                   >
                     <div className="flex-between" style={{ marginBottom: '6px' }}>
@@ -476,7 +476,7 @@ function App() {
                         style={{
                           fontWeight: 700,
                           color: isPosProfit ? 'var(--accent-green)' : 'var(--accent-red)',
-                          background: isPosProfit ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          background: isPosProfit ? 'rgba(249, 115, 22, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                           padding: '2px 8px',
                           borderRadius: '6px',
                           display: 'inline-flex',
