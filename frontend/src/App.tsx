@@ -39,7 +39,7 @@ interface TradePosition {
   takeProfitPrice?: number;
 }
 
-const API = 'http://localhost:8080';
+const API = ''; // Sử dụng relative path để qua proxy
 const INITIAL_BALANCE = 10000;
 
 function App() {
@@ -257,7 +257,7 @@ function App() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 'auto' }}>
               <RefreshIcon size={14} />
-              <span>Tự động cập nhật mỗi <b>10s</b></span>
+
             </div>
           </div>
 
