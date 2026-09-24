@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/trading_signal
+    url: jdbc:postgresql://localhost:5433/trading_signal
     username: trading
     password: trading123
   jpa:
@@ -9,7 +9,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    open-in-view: false
+    open-in-view: false  # Tắt — anti-pattern gây N+1 queries
   flyway:
     enabled: true
 
@@ -28,5 +28,21 @@ app:
       base-url: https://www.alphavantage.co
       api-key: ${ALPHA_VANTAGE_API_KEY:demo}
     schedule:
-      crypto-cron: "0 5 * * * *"             # Mỗi giờ tại phút :05
+      crypto-cron: "*/10 * * * * *"          # Dev: mỗi 10 giây
       stock-cron: "0 0 18 * * MON-FRI"       # Ngày thường lúc 18:00
+
+  risk:
+    max-position-percent: 0.15               # Max 15% vốn / lệnh (high confidence)
+    min-position-percent: 0.05               # Min 5% vốn / lệnh (low confidence)
+    stop-loss-atr-multiplier: 1.5            # Stop-loss = 1.5x ATR
+    risk-reward-ratio: 2.0                   # Take-profit = 2x risk
+    trailing-stop-activation: 0.015          # Trailing stop kích hoạt khi lời >= 1.5%
+    trailing-stop-distance: 0.01             # Trailing stop distance 1% từ đỉnh
+    max-concurrent-positions: 3              # Tối đa 3 vị thế cùng lúc
+    max-capital-deployed: 0.40               # Tối đa 40% vốn deployed
+    max-daily-drawdown: 0.05                 # Dừng trade nếu lỗ > 5% trong ngày
+    cooldown-seconds: 7200                   # 2h cooldown giữa 2 lệnh cùng instrument
+    min-confidence: 60                       # Confidence tối thiểu để trade
+    min-trade-amount: 10                     # Tối thiểu $10 / lệnh
+    fallback-stop-loss-percent: 0.03         # Fallback 3% khi chưa có ATR
+    monitoring-cron: "0 * * * * *"           # Check SL/TP mỗi phút

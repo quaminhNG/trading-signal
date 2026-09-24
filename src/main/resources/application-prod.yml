@@ -1,0 +1,25 @@
+# Production profile — activate with: --spring.profiles.active=prod
+
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+
+  collector:
+    schedule:
+      crypto-cron: "0 5 * * * *"             # Mỗi giờ phút :05 (đợi nến đóng)
+      stock-cron: "0 0 18 * * MON-FRI"
+
+  risk:
+    monitoring-cron: "0 * * * * *"           # Check SL/TP mỗi phút
+    max-concurrent-positions: 3
+    max-daily-drawdown: 0.05
+    cooldown-seconds: 7200
+    min-confidence: 65                       # Prod nâng lên 65 — bảo thủ hơn dev

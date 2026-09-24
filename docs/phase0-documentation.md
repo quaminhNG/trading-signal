@@ -75,18 +75,18 @@ trading-signal/
 
 Flyway tự động chạy các file SQL theo thứ tự version (V1, V2, V3...) khi app khởi động. **Không dùng `ddl-auto`** — mọi thay đổi schema đều qua migration file, dễ track và rollback.
 
-| File | Tạo bảng | Ghi chú |
-|------|----------|---------|
-| `V1__create_users.sql` | `users` | Lưu thông tin đăng nhập. `email` UNIQUE, `password_hash` BCrypt, `role` (USER/ADMIN). |
-| `V2__create_instruments.sql` | `instruments` | Danh mục mã giao dịch (BTCUSDT, AAPL...). `symbol` UNIQUE, `is_active` để bật/tắt thu thập data. |
+| File                           | Tạo bảng        | Ghi chú                                                                                                                                                                                |
+| ------------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `V1__create_users.sql`         | `users`         | Lưu thông tin đăng nhập. `email` UNIQUE, `password_hash` BCrypt, `role` (USER/ADMIN).                                                                                                  |
+| `V2__create_instruments.sql`   | `instruments`   | Danh mục mã giao dịch (BTCUSDT, AAPL...). `symbol` UNIQUE, `is_active` để bật/tắt thu thập data.                                                                                       |
 | `V3__create_price_candles.sql` | `price_candles` | Dữ liệu nến OHLCV — bảng lớn nhất hệ thống. Composite index `(instrument_id, timeframe, open_time DESC)` để query nhanh. Unique constraint chống trùng dữ liệu khi collector chạy lại. |
 
 ### 3.3 Entity Layer — ánh xạ bảng DB thành Java object
 
-| File | Map bảng | Điểm đáng chú ý |
-|------|----------|------------------|
-| `User.java` | `users` | Enum `Role` (USER/ADMIN). `@PrePersist` tự gán `createdAt` và role mặc định. |
-| `Instrument.java` | `instruments` | Enum `InstrumentType` (CRYPTO/STOCK). `@PrePersist` mặc định `active = true`. |
+| File               | Map bảng        | Điểm đáng chú ý                                                                                                                                                              |
+| ------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `User.java`        | `users`         | Enum `Role` (USER/ADMIN). `@PrePersist` tự gán `createdAt` và role mặc định.                                                                                                 |
+| `Instrument.java`  | `instruments`   | Enum `InstrumentType` (CRYPTO/STOCK). `@PrePersist` mặc định `active = true`.                                                                                                |
 | `PriceCandle.java` | `price_candles` | OHLCV dùng `BigDecimal` (không dùng `double` — tránh lỗi làm tròn dấu phẩy động, đặc biệt quan trọng với crypto có giá rất nhỏ). Quan hệ `@ManyToOne` LAZY tới `Instrument`. |
 
 ### 3.4 Repository Layer — truy vấn DB

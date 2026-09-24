@@ -17,3 +17,7 @@ Thumbs.db
 
 ### Env ###
 .env
+
+### Custom Ignore ###
+docs/
+.agents/

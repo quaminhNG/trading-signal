@@ -4,8 +4,10 @@ import com.trading.signal.entity.Instrument;
 import com.trading.signal.entity.PriceCandle;
 import com.trading.signal.repository.InstrumentRepository;
 import com.trading.signal.repository.PriceCandleRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.trading.signal.service.IndicatorEngineService;
+import com.trading.signal.service.SignalEngineService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -17,33 +19,31 @@ import java.util.List;
  * Orchestrator: lấy danh sách instruments active → gọi adapter phù hợp → upsert vào price_candles.
  * Chạy theo @Scheduled cron từ application.yml.
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class DataCollectorService {
 
-    private static final Logger log = LoggerFactory.getLogger(DataCollectorService.class);
+    private volatile Instant lastCollectedAt;
+
+    public Instant getLastCollectedAt() { return lastCollectedAt; }
 
     private final InstrumentRepository instrumentRepository;
     private final PriceCandleRepository candleRepository;
     private final List<ExchangeClient> exchangeClients;
-
-    public DataCollectorService(InstrumentRepository instrumentRepository,
-                                PriceCandleRepository candleRepository,
-                                List<ExchangeClient> exchangeClients) {
-        this.instrumentRepository = instrumentRepository;
-        this.candleRepository = candleRepository;
-        this.exchangeClients = exchangeClients;
-    }
+    private final IndicatorEngineService indicatorEngineService;
+    private final SignalEngineService signalEngineService;
 
     /** Scheduled job cho crypto — mỗi giờ */
     @Scheduled(cron = "${app.collector.schedule.crypto-cron}")
     public void collectCrypto() {
-        collect(Instrument.InstrumentType.CRYPTO, "1h", 2); // 2 giờ lookback
+        collect(Instrument.InstrumentType.CRYPTO, "1h", 720); // 30 days lookback to ensure indicators have enough data
     }
 
     /** Scheduled job cho stock — mỗi ngày */
     @Scheduled(cron = "${app.collector.schedule.stock-cron}")
     public void collectStock() {
-        collect(Instrument.InstrumentType.STOCK, "1d", 48); // 2 ngày lookback
+        collect(Instrument.InstrumentType.STOCK, "1d", 100); // 100 days lookback
     }
 
     /**
@@ -84,6 +84,12 @@ public class DataCollectorService {
                     }
                 }
                 log.info("Collected {}: {} new / {} total candles", instrument.getSymbol(), saved, candles.size());
+                lastCollectedAt = Instant.now();
+                
+                if (saved > 0 || !candles.isEmpty()) {
+                    indicatorEngineService.calculateAndSaveIndicators(instrument.getId(), timeframe, from, to);
+                    signalEngineService.generateSignals(instrument, timeframe, from, to);
+                }
             } catch (Exception e) {
                 // Lỗi 1 instrument không ảnh hưởng các instrument khác
                 log.error("Failed to collect data for {}: {}", instrument.getSymbol(), e.getMessage());

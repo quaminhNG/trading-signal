@@ -28,10 +28,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(org.springframework.security.config.Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/v1/charts/**").permitAll()
+                .requestMatchers("/api/v1/wallet/**").permitAll()
+                .requestMatchers("/api/v1/backtest/**").permitAll()
+                .requestMatchers("/api/v1/status/**").permitAll()
+                .requestMatchers("/api/v1/signals/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/instruments/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/instruments/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/instruments/**").hasRole("ADMIN")
