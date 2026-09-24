@@ -1,29 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 
 :root {
-  /* Color Palette - Light Theme */
+  /* Color Palette - Clean Light Theme */
   --bg-dark: #fdfbf7; /* Trắng sữa / Cream */
   --bg-panel: #ffffff; /* Trắng tinh */
-  --bg-panel-hover: #fafafa;
+  --bg-panel-hover: #ffffff;
   
   --text-main: #334155;
   --text-color: #1e293b;
   --text-muted: #64748b;
   --text-light: #0f172a;
   
-  /* Vibrant Accents */
+  /* Restricting palette to Orange and Neutral Grays */
   --accent-orange: #f97316;
-  --accent-red: #ef4444;
-  --accent-blue: #3b82f6;
-  --accent-cyan: #06b6d4;
-  --accent-green: #10b981;
-  --accent-purple: #8b5cf6;
+  --accent-red: #f97316; /* Map red to orange */
+  --accent-blue: #475569; /* Map blue to dark gray */
+  --accent-cyan: #475569; /* Map cyan to dark gray */
+  --accent-green: #f97316; /* Map green to orange */
+  --accent-purple: #475569; /* Map purple to dark gray */
   
   /* Soft Borders & Shadows */
   --border-glass: 1px solid #e2e8f0;
-  --border-glass-light: 1px solid #cbd5e1;
+  --border-glass-light: 1px solid #e2e8f0;
   --shadow-glass: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 
   --border-radius-lg: 24px;
   --border-radius-md: 16px;
@@ -75,15 +75,8 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-glass);
   padding: 24px;
-  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-}
-
-.soft-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow);
-  border: var(--border-glass-light);
 }
 
 .soft-card-inner {
@@ -91,12 +84,6 @@ h1, h2, h3, h4, h5, h6 {
   border: var(--border-glass);
   border-radius: var(--border-radius-md);
   padding: 16px;
-  transition: all 0.3s ease;
-}
-
-.soft-card-inner:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
 }
 
 /* Layout */
@@ -142,19 +129,6 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
 ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 8px; }
-::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
-
-@keyframes pulse {
-  0% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.1); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-  100% { transform: translateY(0px); }
-}
 
 /* Tab System */
 .tab-group {
@@ -181,17 +155,11 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.85rem;
   font-family: 'Outfit', sans-serif;
   font-weight: 500;
-  border: 1px solid transparent; /* Pre-reserve border space to prevent width jitter */
+  border: 1px solid transparent; 
   background: transparent;
   color: var(--text-muted);
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tab-btn:hover {
-  color: var(--text-color);
-  background: #e2e8f0;
 }
 
 .tab-btn.active {
@@ -246,17 +214,8 @@ h1, h2, h3, h4, h5, h6 {
   vertical-align: middle;
   white-space: nowrap;
 }
-.data-table tbody tr {
-  transition: all 0.2s ease;
-}
-.data-table tbody tr:hover {
-  background: #f8fafc;
-}
 
 /* Gradients for special text */
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent-orange) 0%, #f43f5e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-orange);
 }

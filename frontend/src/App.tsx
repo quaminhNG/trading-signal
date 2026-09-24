@@ -226,11 +226,6 @@ function App() {
               >
                 <EyeIcon size={16} />
                 <span>Chi tiết Mẫu hình</span>
-                {selectedSignal && (
-                  <span className="tab-badge" style={{ background: activeTab === 'detail' ? 'rgba(16,185,129,0.15)' : 'rgba(0,0,0,0.06)', color: activeTab === 'detail' ? 'var(--accent-green)' : 'inherit' }}>
-                    #{selectedSignal.id}
-                  </span>
-                )}
               </button>
 
               <button
