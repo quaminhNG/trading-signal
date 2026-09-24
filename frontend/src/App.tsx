@@ -195,8 +195,8 @@ function App() {
         {/* Large Central Tabbed Panel */}
         <div className="soft-card" style={{ padding: '24px', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
           {/* Tab Navigation Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '12px', flexWrap: 'wrap' }}>
-            <div className="tab-group" style={{ margin: 0, maxWidth: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '12px' }}>
+            <div className="tab-group" style={{ margin: 0, flex: 1, overflowX: 'auto', whiteSpace: 'nowrap' }}>
               <button
                 className={`tab-btn ${activeTab === 'trades' ? 'active' : ''}`}
                 onClick={() => setActiveTab('trades')}
