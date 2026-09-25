@@ -34,10 +34,10 @@ public class DataCollectorService {
     private final IndicatorEngineService indicatorEngineService;
     private final SignalEngineService signalEngineService;
 
-    /** Scheduled job cho crypto — mỗi giờ */
+    /** Scheduled job cho crypto — chạy theo cron config (ví dụ: mỗi 15 phút) */
     @Scheduled(cron = "${app.collector.schedule.crypto-cron}")
     public void collectCrypto() {
-        collect(Instrument.InstrumentType.CRYPTO, "1h", 720); // 30 days lookback to ensure indicators have enough data
+        collect(Instrument.InstrumentType.CRYPTO, "15m", 720); // 15-minute candles, 720 hours lookback (30 days) to warm up indicators
     }
 
     /** Scheduled job cho stock — mỗi ngày */

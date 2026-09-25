@@ -13,29 +13,29 @@ import java.math.BigDecimal;
 @ConfigurationProperties(prefix = "app.risk")
 public class TradeRiskConfig {
 
-    /** % vốn tối đa cho 1 lệnh (high confidence). Default 15% */
-    private BigDecimal maxPositionPercent = new BigDecimal("0.15");
+    /** % vốn tối đa cho 1 lệnh (high confidence). Default 3% cho đánh lệnh nhỏ */
+    private BigDecimal maxPositionPercent = new BigDecimal("0.03");
 
-    /** % vốn tối thiểu cho 1 lệnh (low confidence). Default 5% */
-    private BigDecimal minPositionPercent = new BigDecimal("0.05");
+    /** % vốn tối thiểu cho 1 lệnh (low confidence). Default 1% */
+    private BigDecimal minPositionPercent = new BigDecimal("0.01");
 
     /** Hệ số ATR cho stop-loss. Default 1.5x ATR */
     private BigDecimal stopLossAtrMultiplier = new BigDecimal("1.5");
 
-    /** Risk:Reward ratio tối thiểu. Default 1:2 */
-    private BigDecimal riskRewardRatio = new BigDecimal("2.0");
+    /** Risk:Reward ratio tối thiểu. Default 1.2 (Ăn ngắn) */
+    private BigDecimal riskRewardRatio = new BigDecimal("1.2");
 
-    /** Trailing stop kích hoạt khi lời >= x%. Default 1.5% */
-    private BigDecimal trailingStopActivation = new BigDecimal("0.015");
+    /** Trailing stop kích hoạt khi lời >= x%. Default 0.5% (Scalping) */
+    private BigDecimal trailingStopActivation = new BigDecimal("0.005");
 
-    /** Trailing stop distance từ đỉnh (%). Default 1% */
-    private BigDecimal trailingStopDistance = new BigDecimal("0.01");
+    /** Trailing stop distance từ đỉnh (%). Default 0.2% */
+    private BigDecimal trailingStopDistance = new BigDecimal("0.002");
 
     /** Số vị thế đồng thời tối đa. Default 3 */
     private int maxConcurrentPositions = 3;
 
-    /** % vốn tối đa deployed. Default 40% */
-    private BigDecimal maxCapitalDeployed = new BigDecimal("0.40");
+    /** % vốn tối đa deployed. Default 20% (an toàn) */
+    private BigDecimal maxCapitalDeployed = new BigDecimal("0.20");
 
     /** Drawdown tối đa trong ngày (%). Default 5% */
     private BigDecimal maxDailyDrawdown = new BigDecimal("0.05");

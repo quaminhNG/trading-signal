@@ -30,6 +30,13 @@ interface VirtualWallet {
   balance: number;
 }
 
+interface Instrument {
+  id: number;
+  symbol: string;
+  type: string;
+  isActive: boolean;
+}
+
 interface TradePosition {
   id: number;
   quantity: number;
@@ -44,6 +51,8 @@ const INITIAL_BALANCE = 10000;
 
 function App() {
   const [data, setData] = useState<ChartDataDto[]>([]);
+  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
   const [wallet, setWallet] = useState<VirtualWallet | null>(null);
   const [positions, setPositions] = useState<TradePosition[]>([]);
   const [trades, setTrades] = useState<TradeLog[]>([]);
@@ -57,10 +66,23 @@ function App() {
   const fetchAll = async () => {
     try {
       const to = new Date().toISOString();
-      const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const from = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(); // 10 days for 15m is enough
+
+      // Fetch instruments first if not loaded
+      let currentInst = selectedInstrument;
+      if (!currentInst && instruments.length === 0) {
+        const instRes = await axios.get<Instrument[]>(`${API}/api/instruments?activeOnly=true`);
+        setInstruments(instRes.data);
+        if (instRes.data.length > 0) {
+          currentInst = instRes.data[0];
+          setSelectedInstrument(currentInst);
+        }
+      }
+
+      if (!currentInst) return;
 
       const [chartRes, walletRes, posRes, tradeRes, signalRes, statusRes] = await Promise.all([
-        axios.get<ChartDataDto[]>(`${API}/api/v1/charts/1?timeframe=1h&from=${from}&to=${to}`),
+        axios.get<ChartDataDto[]>(`${API}/api/v1/charts/${currentInst.id}?timeframe=15m&from=${from}&to=${to}`),
         axios.get<VirtualWallet>(`${API}/api/v1/wallet`).catch(() => ({ data: null })),
         axios.get<TradePosition[]>(`${API}/api/v1/wallet/positions`).catch(() => ({ data: [] })),
         axios.get<TradeLog[]>(`${API}/api/v1/wallet/history`).catch(() => ({ data: [] })),
@@ -83,10 +105,10 @@ function App() {
 
   useEffect(() => {
     fetchAll();
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(fetchAll, 10000);
+    // Auto-refresh every 15 seconds
+    const interval = setInterval(fetchAll, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedInstrument]);
 
   const currentPrice = data.length > 0 ? data[data.length - 1].close : 0;
   const prevPrice = data.length > 1 ? data[data.length - 2].close : 0;
@@ -161,16 +183,39 @@ function App() {
           <div className="flex-between" style={{ padding: '20px 24px 12px 24px' }}>
             <div>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '4px' }}>Biểu đồ Thị trường</h3>
-              <p className="text-muted" style={{ fontSize: '0.85rem' }}>Bitcoin / Tether US (BTCUSDT) • Nến 1 Giờ (1H)</p>
+              <p className="text-muted" style={{ fontSize: '0.85rem' }}>{selectedInstrument?.symbol || 'Đang tải...'} • Nến 15 Phút (15m)</p>
             </div>
             <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
               <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px', background: 'rgba(100, 116, 139,0.15)', color: 'var(--accent-blue)', fontWeight: 600, whiteSpace: 'nowrap', border: '1px solid rgba(100, 116, 139,0.3)' }}>
-                Khung 1 Giờ
+                Khung 15 Phút
               </span>
               <span style={{ fontSize: '0.75rem', padding: '6px 12px', borderRadius: '8px', background: 'rgba(249, 115, 22,0.15)', color: 'var(--accent-green)', fontWeight: 600, whiteSpace: 'nowrap', border: '1px solid rgba(249, 115, 22,0.3)' }}>
                 Binance Spot
               </span>
             </div>
+          </div>
+          
+          {/* Coin Selector Tabs */}
+          <div style={{ padding: '0 24px', display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '8px' }}>
+            {instruments.map(inst => (
+              <button 
+                key={inst.id}
+                onClick={() => setSelectedInstrument(inst)}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: selectedInstrument?.id === inst.id ? 'var(--accent-orange)' : 'rgba(100,116,139,0.1)',
+                  color: selectedInstrument?.id === inst.id ? '#fff' : 'var(--text-color)',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {inst.symbol.replace('USDT', '')}
+              </button>
+            ))}
           </div>
 
           <div style={{ flex: 1, padding: '16px', minWidth: 0, overflow: 'hidden' }}>

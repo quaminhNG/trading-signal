@@ -43,6 +43,7 @@ public class PaperTradingService {
     private final RiskManager riskManager;
     private final IndicatorSnapshotRepository indicatorSnapshotRepository;
     private final com.trading.signal.repository.PriceCandleRepository priceCandleRepository;
+    private final TelegramService telegramService;
 
     @EventListener
     @Transactional
@@ -81,14 +82,19 @@ public class PaperTradingService {
         BigDecimal tradeAmount = riskManager.calculatePositionSize(wallet.getBalance(), confidence);
         if (tradeAmount.compareTo(BigDecimal.ZERO) <= 0) return;
 
-        BigDecimal quantity = tradeAmount.divide(price, 8, RoundingMode.HALF_DOWN);
+        // Calculate trade amount and deduct 0.1% mock exchange fee
+        BigDecimal feeRate = new BigDecimal("0.001"); // 0.1% Binance Taker fee
+        BigDecimal feeAmount = tradeAmount.multiply(feeRate);
+        BigDecimal netTradeAmount = tradeAmount.subtract(feeAmount);
+        
+        BigDecimal quantity = netTradeAmount.divide(price, 8, RoundingMode.HALF_DOWN);
 
         // === STOP-LOSS & TAKE-PROFIT ===
         BigDecimal atr = getLatestAtr(instrumentId);
         BigDecimal stopLoss = riskManager.calculateStopLoss(price, atr);
         BigDecimal takeProfit = riskManager.calculateTakeProfit(price, stopLoss);
 
-        // Deduct from wallet
+        // Deduct from wallet (Full amount including fee)
         wallet.setBalance(wallet.getBalance().subtract(tradeAmount));
         walletRepository.save(wallet);
 
@@ -133,6 +139,10 @@ public class PaperTradingService {
         log.info("✅ BUY {} {} at {} (SL={}, TP={}, confidence={}, amount={}). Balance: {}",
                 quantity, signal.getInstrument().getSymbol(), price,
                 stopLoss, takeProfit, confidence, tradeAmount, wallet.getBalance());
+                
+        String alertMsg = String.format("🚀 <b>OPENED BUY</b>\nPair: %s\nSize: %s\nPrice: %s\nSL: %s\nTP: %s\nUsed: %s USDT",
+                signal.getInstrument().getSymbol(), quantity, price, stopLoss, takeProfit, tradeAmount);
+        telegramService.sendTradeAlert(alertMsg);
     }
 
     private void executeSell(VirtualWallet wallet, TradingSignal signal, BigDecimal sellPrice) {
@@ -150,7 +160,7 @@ public class PaperTradingService {
     /**
      * Cron chạy mỗi phút — kiểm tra SL/TP/trailing cho mọi position đang mở.
      */
-    @Scheduled(cron = "${app.risk.monitoring-cron:0 * * * * *}")
+    @Scheduled(cron = "${app.risk.monitoring-cron:*/5 * * * * *}")
     @Transactional
     public void monitorOpenPositions() {
         List<TradePosition> allPositions = positionRepository.findAll();
@@ -203,13 +213,19 @@ public class PaperTradingService {
      */
     private void closePosition(VirtualWallet wallet, TradePosition position, BigDecimal sellPrice, String reason) {
         BigDecimal quantity = position.getQuantity();
-        BigDecimal revenue = quantity.multiply(sellPrice);
-        BigDecimal cost = quantity.multiply(position.getAveragePrice());
-        BigDecimal pnl = revenue.subtract(cost);
+        BigDecimal grossRevenue = quantity.multiply(sellPrice);
+        
+        // Deduct 0.1% mock exchange fee for selling
+        BigDecimal feeRate = new BigDecimal("0.001");
+        BigDecimal feeAmount = grossRevenue.multiply(feeRate);
+        BigDecimal netRevenue = grossRevenue.subtract(feeAmount);
+        
+        BigDecimal cost = quantity.multiply(position.getAveragePrice()); // Cost already accounted for buy fee
+        BigDecimal pnl = netRevenue.subtract(cost);
 
         // Refresh wallet to avoid stale data
         wallet = walletRepository.findById(wallet.getId()).orElse(wallet);
-        wallet.setBalance(wallet.getBalance().add(revenue));
+        wallet.setBalance(wallet.getBalance().add(netRevenue));
         walletRepository.save(wallet);
 
         positionRepository.delete(position);
@@ -224,9 +240,12 @@ public class PaperTradingService {
         tradeLogRepository.save(tradeLog);
 
         String emoji = pnl.compareTo(BigDecimal.ZERO) >= 0 ? "💰" : "📉";
-        log.info("{} CLOSED [{}] {} {} at {}. PnL: {} USDT. Balance: {}",
+        String alertMsg = String.format("%s CLOSED [%s] %s %s at %s. PnL: %s USDT. Balance: %s",
                 emoji, reason, quantity, position.getInstrument().getSymbol(),
                 sellPrice, pnl, wallet.getBalance());
+        
+        log.info(alertMsg);
+        telegramService.sendTradeAlert(alertMsg);
     }
 
     /** Lấy ATR mới nhất cho instrument (dùng để tính stop-loss) */
@@ -249,5 +268,20 @@ public class PaperTradingService {
                 .findClosestCandle(instrument.getId(), "1h", Instant.now())
                 .map(PriceCandle::getClose)
                 .orElse(null);
+    }
+    
+    /** 
+     * Kill Switch: Bán tháo toàn bộ mọi vị thế bằng lệnh Market.
+     * Sử dụng trong trường hợp khẩn cấp khi Watchdog phát hiện tài khoản sập dưới mốc tử thần.
+     */
+    @Transactional
+    public void forceCloseAllPositions(VirtualWallet wallet) {
+        List<TradePosition> openPositions = positionRepository.findByWalletId(wallet.getId());
+        for (TradePosition position : openPositions) {
+            BigDecimal currentPrice = getCurrentPrice(position.getInstrument());
+            if (currentPrice != null) {
+                closePosition(wallet, position, currentPrice, "KILL_SWITCH_PANIC_SELL");
+            }
+        }
     }
 }

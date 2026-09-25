@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    open-in-view: true
+
+app:
+  collector:
+    schedule:
+      crypto-cron: "0 */15 * * * *" # Every 15 minutes
+  telegram:
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    chat-id: ${TELEGRAM_CHAT_ID:}
+  risk:
+    kill-switch-equity: 180

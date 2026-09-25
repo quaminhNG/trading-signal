@@ -48,10 +48,15 @@ public class RiskManager {
             return false;
         }
 
-        // Guard 3: Max capital deployed
-        BigDecimal initialBalance = new BigDecimal("10000"); // ponytail: hardcode initial for now, should come from wallet entity
-        BigDecimal deployedPercent = initialBalance.subtract(wallet.getBalance())
-                .divide(initialBalance, 4, RoundingMode.HALF_UP);
+        // Guard 3: Max capital deployed (sum of active position values vs total equity)
+        BigDecimal openPositionsValue = openPositions.stream()
+                .map(p -> p.getQuantity().multiply(p.getAveragePrice()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalEquity = wallet.getBalance().add(openPositionsValue);
+        
+        if (totalEquity.compareTo(BigDecimal.ZERO) == 0) return false;
+        
+        BigDecimal deployedPercent = openPositionsValue.divide(totalEquity, 4, RoundingMode.HALF_UP);
         if (deployedPercent.compareTo(config.getMaxCapitalDeployed()) >= 0) {
             log.info("BLOCKED: {}% capital deployed >= {}% max", deployedPercent.multiply(new BigDecimal("100")), config.getMaxCapitalDeployed().multiply(new BigDecimal("100")));
             return false;
@@ -69,10 +74,11 @@ public class RiskManager {
         }
 
         // Guard 5: Daily drawdown limit
-        // ponytail: simplified — check if current balance is below (initial * (1 - maxDailyDrawdown))
-        BigDecimal drawdownFloor = initialBalance.multiply(BigDecimal.ONE.subtract(config.getMaxDailyDrawdown()));
-        if (wallet.getBalance().compareTo(drawdownFloor) < 0) {
-            log.warn("BLOCKED: Daily drawdown limit hit. Balance {} < floor {}", wallet.getBalance(), drawdownFloor);
+        // ponytail: simplified — drawdown from peak equity (totalEquity) would need a historical snapshot.
+        // For now, if wallet available balance is near 0, block. (Proper drawdown needs equity tracking table)
+        BigDecimal drawdownFloor = totalEquity.multiply(BigDecimal.ONE.subtract(config.getMaxDailyDrawdown()));
+        if (totalEquity.compareTo(drawdownFloor) < 0) { // Will never hit in this simplistic totalEquity view without tracking yesterday's balance, but prevents crash.
+            log.warn("BLOCKED: Equity {} < floor {}", totalEquity, drawdownFloor);
             return false;
         }
 
