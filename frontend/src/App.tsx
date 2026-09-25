@@ -47,7 +47,7 @@ interface TradePosition {
 }
 
 const API = ''; // Sử dụng relative path để qua proxy
-const INITIAL_BALANCE = 10000;
+const INITIAL_BALANCE = 200;
 
 function App() {
   const [data, setData] = useState<ChartDataDto[]>([]);
@@ -344,7 +344,7 @@ function App() {
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700, whiteSpace: 'nowrap' }}>Ví Giao Dịch Ảo</h3>
             </div>
             <span style={{ fontSize: '0.75rem', background: 'rgba(100, 116, 139,0.15)', color: 'var(--accent-blue)', padding: '4px 12px', borderRadius: '12px', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0, border: '1px solid rgba(100, 116, 139,0.3)' }}>
-              Vốn gốc $10,000
+              Vốn gốc $200
             </span>
           </div>
 
