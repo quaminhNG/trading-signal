@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/status/**").permitAll()
                 .requestMatchers("/api/v1/signals/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/instruments/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/instruments/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/instruments/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/instruments/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/instruments/**").hasRole("ADMIN")
