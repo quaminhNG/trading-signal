@@ -32,6 +32,7 @@ public class PaperTradingServiceTest {
     @Mock private TradeLogRepository tradeLogRepository;
     @Mock private IndicatorSnapshotRepository indicatorSnapshotRepository;
     @Mock private com.trading.signal.repository.PriceCandleRepository priceCandleRepository;
+    @Mock private TelegramService telegramService;
 
     private PaperTradingService paperTradingService;
     private RiskManager riskManager;
@@ -60,7 +61,8 @@ public class PaperTradingServiceTest {
         riskManager = new RiskManager(config, positionRepository, tradeLogRepository);
         paperTradingService = new PaperTradingService(
                 walletRepository, positionRepository, tradeLogRepository,
-                riskManager, indicatorSnapshotRepository, priceCandleRepository
+                riskManager, indicatorSnapshotRepository, priceCandleRepository,
+                telegramService
         );
 
         wallet = new VirtualWallet();
