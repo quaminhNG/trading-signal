@@ -22,6 +22,10 @@ public class WalletController {
     private final VirtualWalletRepository walletRepository;
     private final TradePositionRepository positionRepository;
     private final TradeLogRepository tradeLogRepository;
+    private final com.trading.signal.repository.PriceCandleRepository priceCandleRepository;
+
+    @org.springframework.beans.factory.annotation.Value("${app.trading.default-timeframe:15m}")
+    private String defaultTimeframe;
 
     // ponytail: single-user for now. Multi-tenant = extract user from JWT SecurityContext.
     private static final Long DEFAULT_USER_ID = 1L;
@@ -29,17 +33,36 @@ public class WalletController {
     @GetMapping
     public ResponseEntity<WalletResponse> getWallet() {
         return walletRepository.findByUserId(DEFAULT_USER_ID)
-                .map(w -> ResponseEntity.ok(WalletResponse.from(w)))
+                .map(wallet -> {
+                    BigDecimal totalCoinValue = positionRepository.findByWalletId(wallet.getId()).stream()
+                            .map(pos -> {
+                                BigDecimal currentPrice = priceCandleRepository
+                                        .findClosestCandle(pos.getInstrument().getId(), defaultTimeframe, java.time.Instant.now())
+                                        .map(com.trading.signal.entity.PriceCandle::getClose)
+                                        .orElse(BigDecimal.ZERO);
+                                return pos.getQuantity().multiply(currentPrice);
+                            })
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    return ResponseEntity.ok(WalletResponse.from(wallet, totalCoinValue));
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/positions")
     public ResponseEntity<List<PositionResponse>> getPositions() {
         return walletRepository.findByUserId(DEFAULT_USER_ID)
-                .map(wallet -> ResponseEntity.ok(
-                        positionRepository.findByWalletId(wallet.getId()).stream()
-                                .map(PositionResponse::from)
-                                .toList()))
+                .map(wallet -> {
+                    List<PositionResponse> positions = positionRepository.findByWalletId(wallet.getId()).stream()
+                            .map(pos -> {
+                                BigDecimal currentPrice = priceCandleRepository
+                                        .findClosestCandle(pos.getInstrument().getId(), defaultTimeframe, java.time.Instant.now())
+                                        .map(com.trading.signal.entity.PriceCandle::getClose)
+                                        .orElse(BigDecimal.ZERO);
+                                return PositionResponse.from(pos, currentPrice);
+                            })
+                            .toList();
+                    return ResponseEntity.ok(positions);
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 

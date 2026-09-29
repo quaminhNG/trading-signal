@@ -28,6 +28,8 @@ import './index.css';
 interface VirtualWallet {
   id: number;
   balance: number;
+  totalCoinValue?: number;
+  totalNetWorth?: number;
 }
 
 interface Instrument {
@@ -44,6 +46,8 @@ interface TradePosition {
   instrument?: { symbol: string };
   stopLossPrice?: number;
   takeProfitPrice?: number;
+  currentPrice?: number;
+  unrealizedPnl?: number;
 }
 
 const API = ''; // Sử dụng relative path để qua proxy
@@ -120,12 +124,12 @@ function App() {
   const currentMa50 = data.length > 0 && data[data.length - 1].ma50 ? data[data.length - 1].ma50!.toFixed(2) : '--';
 
   // Calculate wallet valuation: cash + value of open positions
-  const positionsValue = positions.reduce((sum, p) => sum + Number(p.quantity) * currentPrice, 0);
-  const totalEquity = wallet ? wallet.balance + positionsValue : INITIAL_BALANCE;
+  const positionsValue = positions.reduce((sum, p) => sum + Number(p.quantity) * (p.currentPrice || 0), 0);
+  const cashBalance = wallet ? wallet.balance : 0;
+  const totalEquity = cashBalance + positionsValue;
   const pnl = totalEquity - INITIAL_BALANCE;
   const pnlPercent = ((pnl / INITIAL_BALANCE) * 100).toFixed(2);
   const isProfit = pnl >= 0;
-  const cashBalance = wallet ? wallet.balance : 0;
   const cashPercent = totalEquity > 0 ? ((cashBalance / totalEquity) * 100).toFixed(1) : '100';
   const cryptoPercent = totalEquity > 0 ? ((positionsValue / totalEquity) * 100).toFixed(1) : '0';
 
@@ -449,7 +453,8 @@ function App() {
                 const coinSymbol = p.instrument?.symbol ? p.instrument.symbol.replace('USDT', '') : 'BTC';
                 const qty = Number(p.quantity);
                 const entryPrice = Number(p.averagePrice);
-                const posValue = qty * currentPrice;
+                const posCurrentPrice = Number(p.currentPrice || 0);
+                const posValue = qty * posCurrentPrice;
                 const costValue = qty * entryPrice;
                 const posPnl = posValue - costValue;
                 const posPnlPercent = costValue > 0 ? ((posPnl / costValue) * 100).toFixed(2) : '0.00';
@@ -511,7 +516,7 @@ function App() {
                       </div>
                       <div>
                         <span className="text-muted">Giá hiện tại: </span>
-                        <span style={{ fontWeight: 600 }}>${currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                        <span style={{ fontWeight: 600 }}>${posCurrentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                       </div>
                     </div>
 
