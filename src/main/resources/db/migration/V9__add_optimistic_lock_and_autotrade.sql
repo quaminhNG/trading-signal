@@ -1,0 +1,2 @@
+ALTER TABLE virtual_wallets ADD COLUMN auto_trade_enabled BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE trade_positions ADD COLUMN version BIGINT NOT NULL DEFAULT 0;
