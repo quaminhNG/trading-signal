@@ -20,6 +20,9 @@ public class VirtualWallet {
     @Column(name = "balance", nullable = false, precision = 19, scale = 4)
     private BigDecimal balance = new BigDecimal("10000.0000");
 
+    @Column(name = "auto_trade_enabled", nullable = false)
+    private Boolean autoTradeEnabled = true;
+
     @Version
     @Column(name = "version", nullable = false)
     private Long version = 0L;
@@ -48,6 +51,8 @@ public class VirtualWallet {
     public void setUser(User user) { this.user = user; }
     public BigDecimal getBalance() { return balance; }
     public void setBalance(BigDecimal balance) { this.balance = balance; }
+    public Boolean getAutoTradeEnabled() { return autoTradeEnabled; }
+    public void setAutoTradeEnabled(Boolean autoTradeEnabled) { this.autoTradeEnabled = autoTradeEnabled; }
     public Long getVersion() { return version; }
     public void setVersion(Long version) { this.version = version; }
     public Instant getCreatedAt() { return createdAt; }

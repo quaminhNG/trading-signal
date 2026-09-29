@@ -45,10 +45,21 @@ public class PaperTradingService {
     private final com.trading.signal.repository.PriceCandleRepository priceCandleRepository;
     private final TelegramService telegramService;
 
+    @org.springframework.beans.factory.annotation.Value("${app.trading.default-timeframe:15m}")
+    private String defaultTimeframe;
+
+    private final java.util.Set<Long> processedSignalIds = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     @EventListener
     @Transactional
     public void handleSignalGenerated(SignalGeneratedEvent event) {
         TradingSignal signal = event.getSignal();
+        
+        if (signal.getId() != null && !processedSignalIds.add(signal.getId())) {
+            log.debug("Signal {} already processed, skipping", signal.getId());
+            return;
+        }
+
         BigDecimal price = event.getPrice();
 
         log.info("📡 Received {} signal for {} at price {}",
@@ -56,6 +67,7 @@ public class PaperTradingService {
 
         Iterable<VirtualWallet> wallets = walletRepository.findAll();
         for (VirtualWallet wallet : wallets) {
+            if (Boolean.FALSE.equals(wallet.getAutoTradeEnabled())) continue;
             try {
                 if ("BUY".equals(signal.getSignalType())) {
                     executeBuy(wallet, signal, price);
@@ -263,7 +275,7 @@ public class PaperTradingService {
     /** Lấy giá hiện tại từ candle gần nhất */
     private BigDecimal getCurrentPrice(Instrument instrument) {
         return priceCandleRepository
-                .findClosestCandle(instrument.getId(), "1h", Instant.now())
+                .findClosestCandle(instrument.getId(), defaultTimeframe, Instant.now())
                 .map(PriceCandle::getClose)
                 .orElse(null);
     }

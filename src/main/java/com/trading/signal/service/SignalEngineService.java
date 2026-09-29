@@ -38,6 +38,8 @@ public class SignalEngineService {
     private final List<TradingStrategy> strategies;
     private final ObjectMapper objectMapper;
 
+    private final java.util.Map<Long, Instant> lastSignalTime = new java.util.concurrent.ConcurrentHashMap<>();
+
     @Transactional
     public void generateSignals(Instrument instrument, String timeframe, Instant from, Instant to) {
         List<IndicatorSnapshot> snapshots = indicatorSnapshotRepository
@@ -63,6 +65,13 @@ public class SignalEngineService {
                                 .atZone(ZoneId.of("UTC")).toInstant()
                                 .equals(candidate.candleTime()));
                 if (exists) continue;
+
+                Instant lastTime = lastSignalTime.get(instrument.getId());
+                if (lastTime != null && candidate.candleTime().equals(lastTime)) {
+                    log.debug("Skipping conflicting signal for {} at {}", instrument.getSymbol(), candidate.candleTime());
+                    continue;
+                }
+                lastSignalTime.put(instrument.getId(), candidate.candleTime());
 
                 saveSignal(instrument, timeframe, candidate, strategy.getName());
             }
