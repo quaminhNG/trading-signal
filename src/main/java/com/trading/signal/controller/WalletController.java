@@ -44,12 +44,14 @@ public class WalletController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<List<TradeLogResponse>> getHistory() {
+    public ResponseEntity<List<TradeLogResponse>> getHistory(@org.springframework.web.bind.annotation.RequestParam(required = false) Long instrumentId) {
         return walletRepository.findByUserId(DEFAULT_USER_ID)
-                .map(wallet -> ResponseEntity.ok(
-                        tradeLogRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId()).stream()
-                                .map(TradeLogResponse::from)
-                                .toList()))
+                .map(wallet -> {
+                    var logs = instrumentId != null ?
+                            tradeLogRepository.findByWalletIdAndInstrumentIdOrderByCreatedAtDesc(wallet.getId(), instrumentId) :
+                            tradeLogRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId());
+                    return ResponseEntity.ok(logs.stream().map(TradeLogResponse::from).toList());
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 }

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface TradeLogRepository extends JpaRepository<TradeLog, Long> {
     List<TradeLog> findByWalletIdOrderByCreatedAtDesc(Long walletId);
+    List<TradeLog> findByWalletIdAndInstrumentIdOrderByCreatedAtDesc(Long walletId, Long instrumentId);
 }

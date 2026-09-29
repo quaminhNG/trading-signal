@@ -36,10 +36,16 @@ public class TelegramService {
             request.put("text", message);
             request.put("parse_mode", "HTML");
 
-            restTemplate.postForObject(url, request, String.class);
-            log.debug("Telegram alert sent");
+            java.util.concurrent.CompletableFuture.runAsync(() -> {
+                try {
+                    restTemplate.postForObject(url, request, String.class);
+                    log.debug("Telegram alert sent");
+                } catch (Exception e) {
+                    log.error("Failed to send Telegram message async: {}", e.getMessage());
+                }
+            });
         } catch (Exception e) {
-            log.error("Failed to send Telegram message: {}", e.getMessage());
+            log.error("Failed to prepare Telegram message: {}", e.getMessage());
         }
     }
 

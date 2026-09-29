@@ -48,6 +48,10 @@ public class TradePosition {
     @Column(name = "confidence", precision = 5, scale = 2)
     private BigDecimal confidence;
 
+    @Version
+    @Column(name = "version")
+    private Long version = 0L;
+
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
@@ -76,6 +80,8 @@ public class TradePosition {
     public void setPeakPrice(BigDecimal peakPrice) { this.peakPrice = peakPrice; }
     public BigDecimal getConfidence() { return confidence; }
     public void setConfidence(BigDecimal confidence) { this.confidence = confidence; }
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
 
     /** Cập nhật peak price nếu giá hiện tại cao hơn */
     public void updatePeakPrice(BigDecimal currentPrice) {

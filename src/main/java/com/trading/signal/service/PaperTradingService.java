@@ -82,6 +82,11 @@ public class PaperTradingService {
         BigDecimal tradeAmount = riskManager.calculatePositionSize(wallet.getBalance(), confidence);
         if (tradeAmount.compareTo(BigDecimal.ZERO) <= 0) return;
 
+        if (wallet.getBalance().compareTo(tradeAmount) < 0) {
+            log.warn("Không đủ số dư để mua, bỏ qua signal (balance={}, required={})", wallet.getBalance(), tradeAmount);
+            return;
+        }
+
         // Calculate trade amount and deduct 0.1% mock exchange fee
         BigDecimal feeRate = new BigDecimal("0.001"); // 0.1% Binance Taker fee
         BigDecimal feeAmount = tradeAmount.multiply(feeRate);
@@ -158,9 +163,9 @@ public class PaperTradingService {
     }
 
     /**
-     * Cron chạy mỗi phút — kiểm tra SL/TP/trailing cho mọi position đang mở.
+     * Cron chạy mỗi phút (tuỳ config) — kiểm tra SL/TP/trailing cho mọi position đang mở.
      */
-    @Scheduled(cron = "${app.risk.monitoring-cron:*/5 * * * * *}")
+    @Scheduled(cron = "${app.risk.monitoring-cron:0 */2 * * * *}")
     @Transactional
     public void monitorOpenPositions() {
         List<TradePosition> allPositions = positionRepository.findAll();
@@ -250,14 +255,7 @@ public class PaperTradingService {
 
     /** Lấy ATR mới nhất cho instrument (dùng để tính stop-loss) */
     private BigDecimal getLatestAtr(Long instrumentId) {
-        return indicatorSnapshotRepository
-                .findByInstrumentIdAndCandleTimeBetweenOrderByCandleTimeAsc(
-                        instrumentId,
-                        Instant.now().minusSeconds(86400),
-                        Instant.now())
-                .stream()
-                .filter(s -> s.getAtr14() != null)
-                .reduce((a, b) -> b) // Lấy cái cuối (mới nhất)
+        return indicatorSnapshotRepository.findLatestAtr(instrumentId)
                 .map(IndicatorSnapshot::getAtr14)
                 .orElse(null);
     }
